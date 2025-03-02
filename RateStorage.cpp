@@ -6,8 +6,18 @@
 FRateStorage::FRateStorage(const string& FileName)
 {
     FFileLines Lines = FCsvParser::ParseFile(FileName);
+
+    bool bHeaderRead = false;
+    
     for (const FFileLine& Line : Lines)
     {
+        if (!bHeaderRead)
+        {
+            // Skip first line
+            bHeaderRead = true;
+            continue;
+        }
+        
         if (Line.size() != 7)
         {
             continue;
