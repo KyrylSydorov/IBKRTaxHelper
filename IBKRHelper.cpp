@@ -7,15 +7,11 @@
 #include "StockTrade.h"
 #include "RateProvider.h"
 
-#define USE_NBU_API 1
-
 #if USE_NBU_API
 #include "NBURateProvider.h"
 #else
 #include "RateStorage.h"
 #endif
-
-static const string ActivityFileName = "Activity.csv";
 
 vector<FStockTrade>::iterator FindTrade(vector<FStockTrade>& Trades, const string& Symbol)
 {

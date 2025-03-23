@@ -2,6 +2,7 @@
 
 #include "NBURateProvider.h"
 
+#if USE_NBU_API
 #include <curl/curl.h>
 
 namespace NBURateProvider::Internal
@@ -86,3 +87,4 @@ dec4 FNBURateProvider::GetRate(const FDate& Date, const string& Currency) const
     
     return Rate;
 }
+#endif
