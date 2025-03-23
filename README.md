@@ -1,5 +1,6 @@
 Simple program which might help with tax calculations for trades on Interactive Brokers.
 I have created it for myself in 3 hours so it might contain bugs.
+UPD: spent 2 more hours to implement the API version
 
 **ActivityStatements**
 Create report as the annual (or Year-To-Date) csv Activity report on your IBKR reports page.
