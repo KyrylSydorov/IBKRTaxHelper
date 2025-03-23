@@ -14,6 +14,8 @@ struct FDate
     {
         return Day == Other.Day && Month == Other.Month && Year == Other.Year;
     }
+
+    string ToStringNoDelim() const;
 };
 
 // Provide a specialization of std::hash for MyKey

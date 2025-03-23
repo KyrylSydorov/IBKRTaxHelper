@@ -4,12 +4,17 @@
 
 #include "DateTime.h"
 
-class FRateStorage
+#include "RateProvider.h"
+
+/**
+ * @brief Simple provider which takes rates from a CSV file
+ */
+class FRateStorage : public IRateProvider
 {
 public:
     FRateStorage(const string& FileName);
 
-    dec4 GetRate(const FDate& Date, const string& Currency) const;
+    virtual dec4 GetRate(const FDate& Date, const string& Currency) const override;
 
 private:
     using FRates = unordered_map<string, dec4>;

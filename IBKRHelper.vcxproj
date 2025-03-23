@@ -94,6 +94,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,6 +110,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +128,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +148,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,6 +162,9 @@
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="Dec4.cpp" />
     <ClCompile Include="IBKRHelper.cpp" />
+    <ClCompile Include="MatchedTrade.cpp" />
+    <ClCompile Include="NBURateProvider.cpp" />
+    <ClCompile Include="RateProvider.cpp" />
     <ClCompile Include="RateStorage.cpp" />
     <ClCompile Include="StockTrade.cpp" />
   </ItemGroup>
@@ -166,6 +173,9 @@
     <ClInclude Include="CsvParser.h" />
     <ClInclude Include="DateTime.h" />
     <ClInclude Include="Dec4.h" />
+    <ClInclude Include="MatchedTrade.h" />
+    <ClInclude Include="NBURateProvider.h" />
+    <ClInclude Include="RateProvider.h" />
     <ClInclude Include="RateStorage.h" />
     <ClInclude Include="StockTrade.h" />
   </ItemGroup>

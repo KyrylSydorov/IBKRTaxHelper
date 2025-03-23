@@ -3,11 +3,19 @@
 #include "CommonIncludes.h"
 
 #include "CsvParser.h"
-#include "RateStorage.h"
+#include "MatchedTrade.h"
 #include "StockTrade.h"
+#include "RateProvider.h"
+
+#define USE_NBU_API 1
+
+#if USE_NBU_API
+#include "NBURateProvider.h"
+#else
+#include "RateStorage.h"
+#endif
 
 static const string ActivityFileName = "Activity.csv";
-static const string RatesFileName = "Rates.csv";
 
 vector<FStockTrade>::iterator FindTrade(vector<FStockTrade>& Trades, const string& Symbol)
 {
@@ -23,13 +31,21 @@ vector<FStockTrade>::iterator FindTrade(vector<FStockTrade>& Trades, const strin
 
 int main()
 {
-    FRateStorage RateStorage(RatesFileName);
+    unique_ptr<IRateProvider> RateProvider;
+#if USE_NBU_API
+    RateProvider = make_unique<FNBURateProvider>();
+#else
+    static const string RatesFileName = "Rates.csv";
+    RateProvider = make_unique<FRateStorage>(RatesFileName);
+#endif
     
-    FFileLines Lines = FCsvParser::ParseFile("Activity.csv");
+    FFileLines Lines = FCsvParser::ParseFolder("ActivityStatements");
 
     FFileLine TradeLine = { "Trades", "Data", "Order", "Stocks" };
 
     vector<FStockTrade> Trades;
+
+    map<int, vector<FMatchedTrade>> MatchedTradesByYear;
 
     for (const FFileLine& Line : Lines)
     {
@@ -44,14 +60,14 @@ int main()
         if (Trade.Quantity > 0)
         {
             const dec4 TotalBoughtSum = Trade.Price * Trade.Quantity + Trade.Fee;
-            const dec4 TotalBoughtSumUAH = TotalBoughtSum * RateStorage.GetRate(Trade.Date, Trade.Currency);
+            const dec4 TotalBoughtSumUAH = TotalBoughtSum * RateProvider->GetRate(Trade.Date, Trade.Currency);
             Trade.PriceUAH = TotalBoughtSumUAH / Trade.Quantity;
             Trades.push_back(Trade);
             continue;
         }
 
         const dec4 TotalSoldSum = Trade.Price * -Trade.Quantity - Trade.Fee;
-        const dec4 TotalSoldSumUAH = TotalSoldSum * RateStorage.GetRate(Trade.Date, Trade.Currency);
+        const dec4 TotalSoldSumUAH = TotalSoldSum * RateProvider->GetRate(Trade.Date, Trade.Currency);
         Trade.PriceUAH = TotalSoldSumUAH / -Trade.Quantity;
 
         while (Trade.QuantityLeft < 0)
@@ -60,12 +76,8 @@ int main()
             if (TradeIt == Trades.end())
             {
                 __debugbreak();
-                cout << "Trade: " << Trade.Symbol << ' '
-                    << "Sold: " << -Trade.QuantityLeft << ' '
-                    << "\tPrice: " << Trade.PriceUAH << ' '
-                    << "\tBought: 0 "
-                    << "\tPrice: 0 "
-                    << "\tEarned: 0\n";
+                FMatchedTrade MatchedTrade{ .Symbol = Trade.Symbol, .Quantity = -Trade.QuantityLeft, .PriceSold = Trade.PriceUAH };
+                cout << "UNMATCHED TRADE: " << MatchedTrade << "\n";
                 break;
             }
 
@@ -73,34 +85,50 @@ int main()
             
             if (UsedTrade.QuantityLeft <= -Trade.QuantityLeft)
             {
-                const dec4 SumSold = UsedTrade.QuantityLeft * Trade.PriceUAH;
-                const dec4 SumBought = UsedTrade.QuantityLeft * UsedTrade.PriceUAH;
-                cout << "Trade: " << UsedTrade.Symbol << ' '
-                << "Sold: " << UsedTrade.QuantityLeft << ' '
-                << "\tPrice: " << Trade.PriceUAH << ' '
-                << "\tSumSold: " << SumSold << ' '
-                << "\tBought: " << UsedTrade.QuantityLeft << ' '
-                << "\tPrice: " << UsedTrade.PriceUAH << ' '
-                << "\tSumBought: " << SumBought << ' '
-                << "\tEarned: " << SumSold - SumBought << '\n';
+                FMatchedTrade MatchedTrade{
+                    .Symbol = UsedTrade.Symbol,
+                    .Quantity = UsedTrade.QuantityLeft,
+                    .DateBought = UsedTrade.Date,
+                    .PriceBought = UsedTrade.PriceUAH,
+                    .DateSold = Trade.Date,
+                    .PriceSold = Trade.PriceUAH,
+                };
+                MatchedTradesByYear[MatchedTrade.DateSold.Year].emplace_back(move(MatchedTrade));
 
                 Trade.QuantityLeft += UsedTrade.QuantityLeft;
                 Trades.erase(TradeIt);
                 continue;
             }
-
-            const dec4 SumSold = -Trade.QuantityLeft * Trade.PriceUAH;
-            const dec4 SumBought = -Trade.QuantityLeft * UsedTrade.PriceUAH;
-            cout << "Trade: " << UsedTrade.Symbol << ' '
-                << "Sold: " << -Trade.QuantityLeft << ' '
-                << "\tPrice: " << Trade.PriceUAH << ' '
-                << "\tSumSold: " << SumSold << ' '
-                << "\tBought: " << -Trade.QuantityLeft << ' '
-                << "\tPrice: " << UsedTrade.PriceUAH << ' '
-                << "\tSumBought: " << SumBought << ' '
-                << "\tEarned: " << SumSold - SumBought << '\n';
+            FMatchedTrade MatchedTrade{
+                .Symbol = UsedTrade.Symbol,
+                .Quantity = -Trade.QuantityLeft,
+                .DateBought = UsedTrade.Date,
+                .PriceBought = UsedTrade.PriceUAH,
+                .DateSold = Trade.Date,
+                .PriceSold = Trade.PriceUAH,
+            };
+            MatchedTradesByYear[MatchedTrade.DateSold.Year].emplace_back(move(MatchedTrade));
+            
             UsedTrade.QuantityLeft += Trade.QuantityLeft;
             Trade.QuantityLeft = 0.0;
         }
     }
+
+    for (const auto& [Year, MatchedTrades] : MatchedTradesByYear)
+    {
+        cout << "Year: " << Year << "\n";
+
+        dec4 TotalProfit = 0;
+        
+        for (const FMatchedTrade& MatchedTrade : MatchedTrades)
+        {
+            cout << MatchedTrade;
+            TotalProfit += MatchedTrade.GetProfit();
+        }
+
+        cout << "Total profit: " << TotalProfit << "\n";
+        cout << "===============================================\n";
+    }
+
+    
 }
