@@ -6,6 +6,8 @@
 
 struct FCsvParser
 {
+    static FFileLines ParseFolder(const string& FolderName);
+    
     // Contains lines of the file as vectors of strings
     static FFileLines ParseFile(const string& FileName);
 

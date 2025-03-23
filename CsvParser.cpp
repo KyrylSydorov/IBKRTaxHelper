@@ -1,12 +1,31 @@
 ﻿// Kyryl Sydorov, 2025
 
 #include <fstream>
+#include <filesystem>
 
 #include "CsvParser.h"
 
 using std::ifstream;
+using namespace std::filesystem;
 
-vector<vector<string>> FCsvParser::ParseFile(const string& FileName)
+FFileLines FCsvParser::ParseFolder(const string& FolderName)
+{
+    FFileLines Result;
+    
+    for (const directory_entry& Entry : directory_iterator(FolderName))
+    {
+        if (Entry.is_regular_file())
+        {
+            cout << "Parsing " << Entry.path().string() << endl;
+            FFileLines FileData = ParseFile(Entry.path().string());
+            Result.insert(Result.end(), FileData.begin(), FileData.end());
+        }
+    }
+
+    return Result;
+}
+
+FFileLines FCsvParser::ParseFile(const string& FileName)
 {
     ifstream File(FileName);
     FFileLines Result;
