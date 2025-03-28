@@ -43,6 +43,16 @@ bool FIBKRManager::ParseStatement(const FFileLines& Lines)
         {
             continue;
         }
+
+        if (TryProcessBondRedemption(Line))
+        {
+            continue;
+        }
+
+        if (TryProcessCouponPayment(Line))
+        {
+            continue;
+        }
     }
 
     return true;
@@ -212,6 +222,58 @@ bool FIBKRManager::TryProcessSYEP(const FFileLine& Line)
     return true;
 }
 
+bool FIBKRManager::TryProcessBondRedemption(const FFileLine& Line)
+{
+    static const FFileLine BondLine = { "Corporate Actions", "Data", "Bonds" };
+
+    if (!FCsvParser::StartsWith(Line, BondLine))
+    {
+        return false;
+    }
+
+    FOtherAccrual Accrual;
+    Accrual.Currency = Line[3];
+    ParseDateIBKR(Line[4], Accrual.Date);
+    Accrual.Description = Line[6];
+    Accrual.Amount = std::stod(Line[10]);
+    Accrual.AmountUAH = Accrual.Amount * RateProvider->GetRate(Accrual.Date, Accrual.Currency);
+
+    MinYear = std::min(MinYear, Accrual.Date.Year);
+    MaxYear = std::max(MaxYear, Accrual.Date.Year);
+    OtherAccrualsByYear[Accrual.Date.Year].emplace_back(move(Accrual));
+
+    return true;
+}
+
+bool FIBKRManager::TryProcessCouponPayment(const FFileLine& Line)
+{
+    static const FFileLine CouponLine = { "Interest", "Data" };
+    
+    if (!FCsvParser::StartsWith(Line, CouponLine))
+    {
+        return false;
+    }
+
+    if (Line[4].find("Coupon") == string::npos)
+    {
+        return false;
+    }
+
+    FOtherAccrual Accrual;
+    Accrual.Currency = Line[2];
+    ParseDateIBKR(Line[3], Accrual.Date);
+    Accrual.Description = Line[4];
+    Accrual.Amount = std::stod(Line[5]);
+    Accrual.AmountUAH = Accrual.Amount * RateProvider->GetRate(Accrual.Date, Accrual.Currency);
+
+    MinYear = std::min(MinYear, Accrual.Date.Year);
+    MaxYear = std::max(MaxYear, Accrual.Date.Year);
+    OtherAccrualsByYear[Accrual.Date.Year].emplace_back(move(Accrual));
+
+    return true;
+}
+
+
 void FIBKRManager::PrintMatchedTradesByYear(int Year) const
 {
     const auto It = MatchedTradesByYear.find(Year);
@@ -231,7 +293,7 @@ void FIBKRManager::PrintMatchedTradesByYear(int Year) const
         TotalProfit += MatchedTrade.GetProfit();
     }
 
-    cout << "Total profit: " << TotalProfit << "\n";
+    cout << "Trade profit: " << TotalProfit << "\n";
 }
 
 void FIBKRManager::PrintDividendsByYear(int Year) const
