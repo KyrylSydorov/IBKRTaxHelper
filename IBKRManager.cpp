@@ -26,32 +26,24 @@ FIBKRManager::FIBKRManager(unique_ptr<IRateProvider> RateProvider)
 }
 
 bool FIBKRManager::ParseStatement(const FFileLines& Lines)
-{   
+{
+    using FProcessorSignature = bool (FIBKRManager::*)(const FFileLine&);
+    constexpr FProcessorSignature Processors [] = {
+        &FIBKRManager::TryProcessTrade,
+        &FIBKRManager::TryProcessDividend,
+        &FIBKRManager::TryProcessSYEP,
+        &FIBKRManager::TryProcessBondRedemption,
+        &FIBKRManager::TryProcessCouponPayment,
+    };
+    
     for (const FFileLine& Line : Lines)
     {
-        if (TryProcessTrade(Line))
+        for (const FProcessorSignature Processor : Processors)
         {
-            continue;
-        }
-
-        if (TryProcessDividend(Line))
-        {
-            continue;
-        }
-
-        if (TryProcessSYEP(Line))
-        {
-            continue;
-        }
-
-        if (TryProcessBondRedemption(Line))
-        {
-            continue;
-        }
-
-        if (TryProcessCouponPayment(Line))
-        {
-            continue;
+            if ((this->*Processor)(Line))
+            {
+                break;
+            }
         }
     }
 
