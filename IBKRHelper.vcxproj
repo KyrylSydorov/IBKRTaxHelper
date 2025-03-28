@@ -161,9 +161,12 @@
     <ClCompile Include="CsvParser.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="Dec4.cpp" />
+    <ClCompile Include="Dividend.cpp" />
     <ClCompile Include="IBKRHelper.cpp" />
+    <ClCompile Include="IBKRManager.cpp" />
     <ClCompile Include="MatchedTrade.cpp" />
     <ClCompile Include="NBURateProvider.cpp" />
+    <ClCompile Include="OtherAccrual.cpp" />
     <ClCompile Include="RateProvider.cpp" />
     <ClCompile Include="RateStorage.cpp" />
     <ClCompile Include="StockTrade.cpp" />
@@ -173,8 +176,11 @@
     <ClInclude Include="CsvParser.h" />
     <ClInclude Include="DateTime.h" />
     <ClInclude Include="Dec4.h" />
+    <ClInclude Include="Dividend.h" />
+    <ClInclude Include="IBKRManager.h" />
     <ClInclude Include="MatchedTrade.h" />
     <ClInclude Include="NBURateProvider.h" />
+    <ClInclude Include="OtherAccrual.h" />
     <ClInclude Include="RateProvider.h" />
     <ClInclude Include="RateStorage.h" />
     <ClInclude Include="StockTrade.h" />
