@@ -36,7 +36,6 @@ dec4 FNBURateProvider::GetRate(const FDate& Date, const string& Currency) const
     const auto FoundRate = DayRates.find(Currency);
     if (FoundRate != DayRates.end())
     {
-        cout << "Rate for " << Currency << " on " << Date.ToStringNoDelim() << " is cached" << endl;
         return FoundRate->second;
     }
     

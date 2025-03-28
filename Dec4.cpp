@@ -107,7 +107,7 @@ dec4 abs(dec4 Value)
     return Value.ToAbsolute();
 }
 
-std::ostream& operator<<(std::ostream& Out, dec4 Value)
+std::ostream& operator<<(ostream& Out, dec4 Value)
 {
     if (Value.Value < 0)
     {
@@ -118,17 +118,17 @@ std::ostream& operator<<(std::ostream& Out, dec4 Value)
     std::string s = std::to_string(Value.Value);
     if (s.size() < 5)
     {
-        Out << "0.";
-        for (size_t i = 0; i < 4 - s.size(); ++i)
+        std::string NewString = "00000";
+
+        for (size_t i = 0; i < s.size(); ++i)
         {
-            Out << '0';
+            NewString[NewString.size() - 1 - i] = s[s.size() - 1 - i];
         }
+
+        s = std::move(NewString);
     }
-    else
-    {
-        Out << s.substr(0, s.size() - 4) << '.';
-    }
-    return Out << s.substr(s.size() - 4);
+    
+    return Out << s.substr(0, s.size() - 4) << '.' << s.substr(s.size() - 4);
 }
 
 std::istream& operator>>(std::istream& In, dec4& Value)
