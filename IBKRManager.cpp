@@ -4,6 +4,7 @@
 
 #include "CsvParser.h"
 #include "RateProvider.h"
+#include "TaxManager.h"
 
 namespace IBKRManager
 {
@@ -286,6 +287,9 @@ void FIBKRManager::PrintMatchedTradesByYear(int Year) const
     }
 
     cout << "Trade profit: " << TotalProfit << "\n";
+
+    const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::Trade, TotalProfit, Year);
+    cout << Taxes;
 }
 
 void FIBKRManager::PrintDividendsByYear(int Year) const
@@ -308,6 +312,9 @@ void FIBKRManager::PrintDividendsByYear(int Year) const
     }
 
     cout << "Total dividends: " << TotalDividends << "\n";
+
+    const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::Dividend, TotalDividends, Year);
+    cout << Taxes;
 }
 
 void FIBKRManager::PrintOtherAccrualsByYear(int Year) const
@@ -330,4 +337,7 @@ void FIBKRManager::PrintOtherAccrualsByYear(int Year) const
     }
 
     cout << "Total accruals: " << TotalAccruals << "\n";
+
+    const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::OtherAccrual, TotalAccruals, Year);
+    cout << Taxes;
 }

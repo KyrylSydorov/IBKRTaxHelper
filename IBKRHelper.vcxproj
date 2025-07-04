@@ -170,6 +170,7 @@
     <ClCompile Include="RateProvider.cpp" />
     <ClCompile Include="RateStorage.cpp" />
     <ClCompile Include="StockTrade.cpp" />
+    <ClCompile Include="TaxManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommonIncludes.h" />
@@ -184,6 +185,7 @@
     <ClInclude Include="RateProvider.h" />
     <ClInclude Include="RateStorage.h" />
     <ClInclude Include="StockTrade.h" />
+    <ClInclude Include="TaxManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
