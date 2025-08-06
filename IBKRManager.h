@@ -31,6 +31,7 @@ private:
     bool TryProcessTrade(const FFileLine& Line);
     bool TryProcessDividend(const FFileLine& Line);
     bool TryProcessSYEP(const FFileLine& Line);
+    bool TryProcessCreditInterest(const FFileLine& Line);
     bool TryProcessBondRedemption(const FFileLine& Line);
     bool TryProcessCouponPayment(const FFileLine& Line);
 

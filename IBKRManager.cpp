@@ -33,6 +33,7 @@ bool FIBKRManager::ParseStatement(const FFileLines& Lines)
         &FIBKRManager::TryProcessTrade,
         &FIBKRManager::TryProcessDividend,
         &FIBKRManager::TryProcessSYEP,
+        &FIBKRManager::TryProcessCreditInterest,
         &FIBKRManager::TryProcessBondRedemption,
         &FIBKRManager::TryProcessCouponPayment,
     };
@@ -197,6 +198,34 @@ bool FIBKRManager::TryProcessSYEP(const FFileLine& Line)
     }
 
     if (Line[4].find("SYEP") == string::npos)
+    {
+        return false;
+    }
+
+    FOtherAccrual Accrual;
+    Accrual.Currency = Line[2];
+    ParseDateIBKR(Line[3], Accrual.Date);
+    Accrual.Description = Line[4];
+    Accrual.Amount = std::stod(Line[5]);
+    Accrual.AmountUAH = Accrual.Amount * RateProvider->GetRate(Accrual.Date, Accrual.Currency);
+
+    MinYear = std::min(MinYear, Accrual.Date.Year);
+    MaxYear = std::max(MaxYear, Accrual.Date.Year);
+    OtherAccrualsByYear[Accrual.Date.Year].emplace_back(move(Accrual));
+
+    return true;
+}
+
+bool FIBKRManager::TryProcessCreditInterest(const FFileLine& Line)
+{
+    static const FFileLine SYEPLine = { "Interest", "Data" };
+    
+    if (!FCsvParser::StartsWith(Line, SYEPLine))
+    {
+        return false;
+    }
+
+    if (Line[4].find("Credit Interest") == string::npos)
     {
         return false;
     }
