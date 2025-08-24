@@ -52,14 +52,21 @@ bool FIBKRManager::ParseStatement(const FFileLines& Lines)
     return true;
 }
 
+static dec4 TotalTaxesInCurrentYear = 0; 
+
 void FIBKRManager::PrintEverything() const
 {
     for (int Year = MinYear; Year <= MaxYear; ++Year)
     {
         cout << "Year: " << Year << "\n";
+
+        TotalTaxesInCurrentYear = 0;
+        
         PrintMatchedTradesByYear(Year);
         PrintDividendsByYear(Year);
         PrintOtherAccrualsByYear(Year);
+
+        cout << "Total taxes for year " << Year << ": " << TotalTaxesInCurrentYear << " UAH\n";
         cout << "===============================================\n";
     }
 }
@@ -319,6 +326,11 @@ void FIBKRManager::PrintMatchedTradesByYear(int Year) const
 
     const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::Trade, TotalProfit, Year);
     cout << Taxes;
+
+    for (const FTaxToPay& Tax : Taxes)
+    {
+       TotalTaxesInCurrentYear += Tax.Amount;
+    }
 }
 
 void FIBKRManager::PrintDividendsByYear(int Year) const
@@ -344,6 +356,11 @@ void FIBKRManager::PrintDividendsByYear(int Year) const
 
     const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::Dividend, TotalDividends, Year);
     cout << Taxes;
+
+    for (const FTaxToPay& Tax : Taxes)
+    {
+        TotalTaxesInCurrentYear += Tax.Amount;
+    }
 }
 
 void FIBKRManager::PrintOtherAccrualsByYear(int Year) const
@@ -369,4 +386,9 @@ void FIBKRManager::PrintOtherAccrualsByYear(int Year) const
 
     const FTaxList Taxes = FTaxManager::CalculateTaxes(EProfitType::OtherAccrual, TotalAccruals, Year);
     cout << Taxes;
+
+    for (const FTaxToPay& Tax : Taxes)
+    {
+        TotalTaxesInCurrentYear += Tax.Amount;
+    }
 }
