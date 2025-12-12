@@ -4,7 +4,7 @@
 
 ostream& operator<<(ostream& os, const FDividend& Dividend)
 {
-    return os << "Dividend: " << Dividend.Symbol << " paid on " << Dividend.Date << ". Profit: " << Dividend.AmountUAH << '\n';
+    return os << "Dividend: " << Dividend.Symbol << " paid on " << Dividend.Date << ". Profit: " << Dividend.AmountUAH << " UAH (" << Dividend.Amount << ' ' << Dividend.Currency << ")\n";
 }
 
 FDividend ParseDividend(const FFileLine& Line)
