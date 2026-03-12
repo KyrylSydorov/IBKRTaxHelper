@@ -118,6 +118,7 @@ bool FIBKRManager::TryProcessTrade(const FFileLine& Line)
         const dec4 TotalBoughtSum = Trade.Price * Trade.Quantity + Trade.Fee;
         const dec4 TotalBoughtSumUAH = TotalBoughtSum * RateProvider->GetRate(Trade.Date, Trade.Currency);
         Trade.PriceUAH = TotalBoughtSumUAH / Trade.Quantity;
+        Trade.PriceWithFee = TotalBoughtSum / Trade.Quantity;
         Trades.push_back(Trade);
         return true;
     }
@@ -125,6 +126,7 @@ bool FIBKRManager::TryProcessTrade(const FFileLine& Line)
     const dec4 TotalSoldSum = Trade.Price * -Trade.Quantity - Trade.Fee;
     const dec4 TotalSoldSumUAH = TotalSoldSum * RateProvider->GetRate(Trade.Date, Trade.Currency);
     Trade.PriceUAH = TotalSoldSumUAH / -Trade.Quantity;
+    Trade.PriceWithFee = TotalSoldSum / -Trade.Quantity;
 
     while (Trade.QuantityLeft < 0)
     {
@@ -132,7 +134,7 @@ bool FIBKRManager::TryProcessTrade(const FFileLine& Line)
         if (TradeIt == Trades.end())
         {
             __debugbreak();
-            FMatchedTrade MatchedTrade{ .Symbol = Trade.Symbol, .Quantity = -Trade.QuantityLeft, .PriceSold = Trade.PriceUAH };
+            FMatchedTrade MatchedTrade{ .Symbol = Trade.Symbol, .Quantity = -Trade.QuantityLeft, .PriceSoldUAH = Trade.PriceUAH };
             cout << "UNMATCHED TRADE: " << MatchedTrade << "\n";
             break;
         }
@@ -145,9 +147,12 @@ bool FIBKRManager::TryProcessTrade(const FFileLine& Line)
                 .Symbol = UsedTrade.Symbol,
                 .Quantity = UsedTrade.QuantityLeft,
                 .DateBought = UsedTrade.Date,
-                .PriceBought = UsedTrade.PriceUAH,
+                .PriceBoughtUAH = UsedTrade.PriceUAH,
                 .DateSold = Trade.Date,
-                .PriceSold = Trade.PriceUAH,
+                .PriceSoldUAH = Trade.PriceUAH,
+                .Currency = Trade.Currency,
+                .PriceBought = UsedTrade.PriceWithFee,
+                .PriceSold = Trade.PriceWithFee,
             };
             MinYear = std::min(MinYear, MatchedTrade.DateSold.Year);
             MaxYear = std::max(MaxYear, MatchedTrade.DateSold.Year);
@@ -161,9 +166,12 @@ bool FIBKRManager::TryProcessTrade(const FFileLine& Line)
             .Symbol = UsedTrade.Symbol,
             .Quantity = -Trade.QuantityLeft,
             .DateBought = UsedTrade.Date,
-            .PriceBought = UsedTrade.PriceUAH,
+            .PriceBoughtUAH = UsedTrade.PriceUAH,
             .DateSold = Trade.Date,
-            .PriceSold = Trade.PriceUAH,
+            .PriceSoldUAH = Trade.PriceUAH,
+			.Currency = Trade.Currency,
+			.PriceBought = UsedTrade.PriceWithFee,
+			.PriceSold = Trade.PriceWithFee,
         };
         MinYear = std::min(MinYear, MatchedTrade.DateSold.Year);
         MaxYear = std::max(MaxYear, MatchedTrade.DateSold.Year);
@@ -181,7 +189,7 @@ bool FIBKRManager::TryProcessDividend(const FFileLine& Line)
     static const FFileLine DividendLine = { "Dividends", "Data" };
     static const FFileLine DividendTotalLine = { "Dividends", "Data", "Total" };
     
-    if (!FCsvParser::StartsWith(Line, DividendLine) || FCsvParser::StartsWith(Line, DividendTotalLine))
+    if (!FCsvParser::StartsWith(Line, DividendLine) || FCsvParser::StartsWith(Line, DividendTotalLine, true))
     {
         return false;
     }
@@ -315,11 +323,13 @@ void FIBKRManager::PrintMatchedTradesByYear(int Year) const
     const vector<FMatchedTrade>& MatchedTrades = It->second;
     
     dec4 TotalProfit = 0;
+    int RowNumber = 0;
+    FMatchedTrade::PrintHeader(cout);
         
     for (const FMatchedTrade& MatchedTrade : MatchedTrades)
     {
-        cout << MatchedTrade;
-        TotalProfit += MatchedTrade.GetProfit();
+        cout << (++RowNumber) << '\t' << MatchedTrade;
+        TotalProfit += MatchedTrade.GetProfitUAH();
     }
 
     cout << "Trade profit: " << TotalProfit << "\n";

@@ -66,14 +66,20 @@ FFileLines FCsvParser::ParseFile(const string& FileName)
     return Result;
 }
 
-bool FCsvParser::StartsWith(const FFileLine& Line, const FFileLine& Prefix)
+bool FCsvParser::StartsWith(const FFileLine& Line, const FFileLine& Prefix, bool bLastTokenIsPrefix)
 {
     for (size_t i = 0; i < Prefix.size(); ++i)
     {
-        if (i >= Line.size() || Line[i] != Prefix[i])
+        if (i >= Line.size())
         {
             return false;
         }
+
+        if (Line[i] != Prefix[i])
+        {
+            return (i == Prefix.size() - 1) && bLastTokenIsPrefix && Line[i].starts_with(Prefix[i]);
+        }
     }
+
     return true;
 }

@@ -54,6 +54,14 @@ vector<FTaxToPay> FTaxManager::CalculateTaxes(EProfitType ProfitType, dec4 Profi
                                     { EProfitType::OtherAccrual, {{ETaxType::IncomeTax, 18}, {ETaxType::MilitaryTax, 5} } }
                 }
             },
+			{
+				2026, FTaxRules{
+									{ EProfitType::Trade, { {ETaxType::IncomeTax, 18}, {ETaxType::MilitaryTax, 5} } },
+									{ EProfitType::Dividend, {{ETaxType::DividendTax, 9}, {ETaxType::MilitaryTax, 5} } },
+									{ EProfitType::Bond, {{ETaxType::IncomeTax, 18}, {ETaxType::MilitaryTax, 5} } },
+									{ EProfitType::OtherAccrual, {{ETaxType::IncomeTax, 18}, {ETaxType::MilitaryTax, 5} } }
+				}
+			},
         };
 
     FTaxRulesCollection::const_iterator TaxRules = TaxRulesCollection.find(Year);
