@@ -42,8 +42,9 @@ void ParseDateNBU(const string& DateStr, FDate& Date)
     }
 }
 
-ostream& operator<<(ostream& Out, const FDate& Date)
+ostream& operator<<(ostream& Result, const FDate& Date)
 {
+    std::stringstream Out;
     Out << Date.Day << "." << Date.Month << "." << Date.Year;
-    return Out;
+    return Result << Out.str();
 }

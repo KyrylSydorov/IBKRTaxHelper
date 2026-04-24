@@ -3,6 +3,7 @@
 #include "Dec4.h"
 
 #include <cmath>
+#include <sstream>
 #include <string>
 
 dec4::dec4(int InValue)
@@ -107,8 +108,10 @@ dec4 abs(dec4 Value)
     return Value.ToAbsolute();
 }
 
-std::ostream& operator<<(ostream& Out, dec4 Value)
+std::ostream& operator<<(ostream& Result, dec4 Value)
 {
+    std::stringstream Out;
+
     if (Value.Value < 0)
     {
         Out << '-';
@@ -128,7 +131,9 @@ std::ostream& operator<<(ostream& Out, dec4 Value)
         s = std::move(NewString);
     }
     
-    return Out << s.substr(0, s.size() - 4) << '.' << s.substr(s.size() - 4);
+    Out << s.substr(0, s.size() - 4) << '.' << s.substr(s.size() - 4);
+
+    return Result << Out.str();
 }
 
 std::istream& operator>>(std::istream& In, dec4& Value)

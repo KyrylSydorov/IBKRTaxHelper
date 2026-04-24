@@ -35,6 +35,8 @@ struct FStockTrade
     
     dec4 QuantityLeft = 0;
     dec4 PriceUAH = 0;
+
+    dec4 PriceWithFee = 0; // In original currency
 };
 
 FStockTrade ParseTrade(const FFileLine& Line);
